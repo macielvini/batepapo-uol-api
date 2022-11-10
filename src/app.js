@@ -3,6 +3,7 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import Joi from "joi";
+import dayjs from "dayjs";
 
 const app = express();
 
@@ -45,6 +46,13 @@ app.post("/participants", async (req, res) => {
     await db
       .collection("participants")
       .insertOne({ ...body, lastStatus: Date.now() });
+    await db.collection("messages").insertOne({
+      from: body.name,
+      to: "Todos",
+      text: "entra na sala...",
+      type: "status",
+      time: dayjs(Date.now()).format("HH:mm:ss"),
+    });
     res.sendStatus(201);
   } catch (error) {
     res.sendStatus(409);
