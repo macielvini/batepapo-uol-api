@@ -25,19 +25,26 @@ try {
 
 //code
 app.post("/participants", async (req, res) => {
-  const { name } = req.body;
-  const schema = Joi.object({ username: Joi.string().alphanum().required() });
+  const body = req.body;
+  const schema = Joi.object({ name: Joi.string().alphanum().required() });
 
   const result = schema.validate(req.body);
-  if (result) {
-    res.status(422).send(result.error.message);
+  if (result.error) {
+    res.status(422).send(result.error);
+    return;
+  }
+
+  const nameExist = await db.collection("participants").findOne(body);
+
+  if (nameExist) {
+    res.sendStatus(409);
     return;
   }
 
   try {
     await db
       .collection("participants")
-      .insertOne({ name, lastStatus: Date.now() });
+      .insertOne({ ...body, lastStatus: Date.now() });
     res.sendStatus(201);
   } catch (error) {
     res.sendStatus(409);
@@ -47,7 +54,3 @@ app.post("/participants", async (req, res) => {
 
 //port
 app.listen(5000, () => console.log("Server running in port 5000"));
-
-function userExist(name) {
-  return db.collection("users").findOne(name) ? true : false;
-}
