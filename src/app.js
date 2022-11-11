@@ -2,8 +2,8 @@ import express from "express";
 import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
-import Joi from "joi";
 import dayjs from "dayjs";
+import { validateParticipant } from "../schemas.js";
 
 const app = express();
 
@@ -27,11 +27,10 @@ try {
 //code
 app.post("/participants", async (req, res) => {
   const body = req.body;
-  const schema = Joi.object({ name: Joi.string().alphanum().required() });
 
-  const result = schema.validate(req.body);
-  if (result.error) {
-    res.status(422).send(result.error);
+  const validate = validateParticipant(req.body);
+  if (validate.error) {
+    res.status(422).send(validate.error);
     return;
   }
 
