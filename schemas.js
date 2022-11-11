@@ -5,5 +5,5 @@ export const validateParticipant = (body) => {
     name: Joi.string().alphanum().required(),
   });
 
-  return participantSchema.validate(body, { abortEarly: true });
+  return participantSchema.validate(body, { abortEarly: false });
 };

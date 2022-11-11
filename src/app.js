@@ -28,9 +28,10 @@ try {
 app.post("/participants", async (req, res) => {
   const body = req.body;
 
-  const validate = validateParticipant(req.body);
-  if (validate.error) {
-    res.status(422).send(validate.error);
+  const validation = validationParticipant(req.body);
+  if (validation.error) {
+    const errors = validation.error.details.map((e) => e.message);
+    res.status(422).send(errors);
     return;
   }
 
