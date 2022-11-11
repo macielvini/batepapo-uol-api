@@ -45,6 +45,7 @@ app.post("/participants", async (req, res) => {
     await db
       .collection("participants")
       .insertOne({ ...body, lastStatus: Date.now() });
+
     await db.collection("messages").insertOne({
       from: body.name,
       to: "Todos",
@@ -52,10 +53,20 @@ app.post("/participants", async (req, res) => {
       type: "status",
       time: dayjs(Date.now()).format("HH:mm:ss"),
     });
+
     res.sendStatus(201);
   } catch (error) {
     res.sendStatus(409);
     console.log(error);
+  }
+});
+
+app.get("/participants", async (req, res) => {
+  try {
+    const participants = await db.collection("participants").find().toArray();
+    res.send(participants);
+  } catch (error) {
+    res.sendStatus(400);
   }
 });
 
