@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
-import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
+import { MongoClient } from "mongodb";
 import { validateMessage, validateParticipant } from "../schemas.js";
 
 const app = express();
@@ -26,7 +26,7 @@ try {
 
 const time = dayjs(Date.now()).format("HH:mm:ss");
 
-//code
+//GET
 app.get("/participants", async (req, res) => {
   try {
     const participants = await db.collection("participants").find().toArray();
@@ -36,10 +36,28 @@ app.get("/participants", async (req, res) => {
   }
 });
 
+app.get("/messages", async (req, res) => {
+  const limit = parseInt(req.query.limit) * -1;
+  const { user } = req.headers;
+
+  console.log(user);
+
+  try {
+    const messages = await db.collection("messages").find().toArray();
+    const filteredMessages = messages.filter(
+      (m) => m.type === "message" || m.to === user
+    );
+    res.send(filteredMessages);
+  } catch (error) {
+    res.sendStatus(404);
+  }
+});
+
+//POST
 app.post("/participants", async (req, res) => {
   const body = req.body;
 
-  const validation = validationParticipant(req.body);
+  const validation = validateParticipant(req.body);
   if (validation.error) {
     const errors = validation.error.details.map((e) => e.message);
     res.status(422).send(errors);
@@ -101,6 +119,10 @@ app.post("/messages", async (req, res) => {
     res.send(422);
   }
 });
+
+//PUT
+
+//DELETE
 
 //port
 app.listen(5000, () => console.log("Server running in port 5000"));
