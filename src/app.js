@@ -3,7 +3,7 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
-import { validateParticipant } from "../schemas.js";
+import { validateMessage, validateParticipant } from "../schemas.js";
 
 const app = express();
 
@@ -24,7 +24,18 @@ try {
   console.log(error);
 }
 
+const time = dayjs(Date.now()).format("HH:mm:ss");
+
 //code
+app.get("/participants", async (req, res) => {
+  try {
+    const participants = await db.collection("participants").find().toArray();
+    res.send(participants);
+  } catch (error) {
+    res.sendStatus(400);
+  }
+});
+
 app.post("/participants", async (req, res) => {
   const body = req.body;
 
@@ -62,12 +73,32 @@ app.post("/participants", async (req, res) => {
   }
 });
 
-app.get("/participants", async (req, res) => {
+app.post("/messages", async (req, res) => {
+  const body = req.body;
+  const { user } = req.headers;
+
+  const validation = validateMessage(body);
+  if (validation.error) {
+    const error = validation.error.details.map((e) => e.message);
+    res.send(error).status(422);
+  }
+
   try {
-    const participants = await db.collection("participants").find().toArray();
-    res.send(participants);
+    await db.collection("participants").findOne({ name: user });
   } catch (error) {
-    res.sendStatus(400);
+    res.status(422).send("user not found");
+    return;
+  }
+
+  try {
+    await db.collection("messages").insertOne({
+      from: user,
+      ...body,
+      time: time,
+    });
+    res.sendStatus(201);
+  } catch (error) {
+    res.send(422);
   }
 });
 
