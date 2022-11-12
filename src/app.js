@@ -120,6 +120,24 @@ app.post("/messages", async (req, res) => {
   }
 });
 
+app.post("/status", async (req, res) => {
+  const { user } = req.headers;
+
+  try {
+    const findUser = await db
+      .collection("participants")
+      .findOne({ name: user });
+
+    if (!findUser) {
+      return res.sendStatus(404);
+    }
+
+    res.send("passou");
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 //PUT
 
 //DELETE
