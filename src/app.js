@@ -148,11 +148,25 @@ app.post("/status", async (req, res) => {
 //PUT
 
 //DELETE
-const updateInterval = 5 * 1000;
+const updateInterval = 15 * 1000;
+const deleteInterval = 10 * 1000;
 
 setInterval(async () => {
   const users = await db.collection("participants").find().toArray();
-  const inactiveUsers = users.filter((u) => u.lastStatus < Date.now() - 10000);
+  const inactiveUsers = users.filter(
+    (u) => u.lastStatus < Date.now() - deleteInterval
+  );
+
+  await inactiveUsers.forEach((u) => {
+    db.collection("messages").insertOne({
+      from: u.name,
+      to: "Todos",
+      text: "sai da sala...",
+      type: "status",
+      time: time,
+    });
+  });
+
   await inactiveUsers.forEach((u) => {
     db.collection("participants").deleteOne({ _id: u._id });
   });
