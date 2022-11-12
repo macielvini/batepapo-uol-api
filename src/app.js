@@ -132,9 +132,16 @@ app.post("/status", async (req, res) => {
       return res.sendStatus(404);
     }
 
-    res.send("passou");
+    await db
+      .collection("participants")
+      .updateOne(
+        { _id: findUser._id },
+        { $set: { ...findUser, lastStatus: Date.now() } }
+      );
+
+    res.sendStatus(200);
   } catch (error) {
-    console.log(error);
+    res.sendStatus(500);
   }
 });
 
