@@ -148,6 +148,15 @@ app.post("/status", async (req, res) => {
 //PUT
 
 //DELETE
+const updateInterval = 5 * 1000;
+
+setInterval(async () => {
+  const users = await db.collection("participants").find().toArray();
+  const inactiveUsers = users.filter((u) => u.lastStatus < Date.now() - 10000);
+  await inactiveUsers.forEach((u) => {
+    db.collection("participants").deleteOne({ _id: u._id });
+  });
+}, updateInterval);
 
 //port
 app.listen(5000, () => console.log("Server running in port 5000"));
