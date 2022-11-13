@@ -116,6 +116,8 @@ app.post("/messages", async (req, res) => {
   }
 });
 
+//previously
+
 app.post("/status", async (req, res) => {
   const { user } = req.headers;
 
@@ -142,6 +144,44 @@ app.post("/status", async (req, res) => {
 });
 
 //PUT
+app.put("/messages/:id", async (req, res) => {
+  const body = req.body;
+  const { user } = req.headers;
+  const { id } = req.params;
+
+  const validation = validateMessage(body);
+  if (validation.error) {
+    return res.sendStatus(422);
+  }
+
+  try {
+    const userExist = await db
+      .collection("participants")
+      .findOne({ name: user });
+    if (!userExist) {
+      return res.sendStatus(422);
+    }
+
+    const message = await db
+      .collection("messages")
+      .findOne({ _id: ObjectId(id) });
+    if (!message) {
+      return res.sendStatus(404);
+    }
+
+    if (user !== message.from) {
+      return res.sendStatus(401);
+    }
+
+    await db
+      .collection("messages")
+      .updateOne({ _id: ObjectId(id) }, { $set: { ...message, ...body } });
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 //DELETE
 app.delete("/messages/:id", async (req, res) => {
