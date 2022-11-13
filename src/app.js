@@ -94,17 +94,17 @@ app.post("/messages", async (req, res) => {
   const validation = validateMessage(body);
   if (validation.error) {
     const error = validation.error.details.map((e) => e.message);
-    res.send(error).status(422);
+    return res.send(error).status(422);
   }
 
   try {
-    await db.collection("participants").findOne({ name: user });
-  } catch (error) {
-    res.status(422).send("user not found");
-    return;
-  }
+    const exist = await db.collection("participants").findOne({ name: user });
+    console.log("first");
 
-  try {
+    if (!exist) {
+      return res.sendStatus(422);
+    }
+
     await db.collection("messages").insertOne({
       from: user,
       ...body,
@@ -112,7 +112,7 @@ app.post("/messages", async (req, res) => {
     });
     res.sendStatus(201);
   } catch (error) {
-    res.send(422);
+    res.sendStatus(422);
   }
 });
 
@@ -170,5 +170,6 @@ async function deleteInactiveUsers() {
   });
 }
 setInterval(() => "deleteInactiveUser", updateInterval);
+
 //port
 app.listen(5000, () => console.log("Server running in port 5000"));
