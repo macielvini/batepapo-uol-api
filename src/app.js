@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import { validateMessage, validateParticipant } from "../schemas.js";
 
 const app = express();
@@ -144,6 +144,28 @@ app.post("/status", async (req, res) => {
 //PUT
 
 //DELETE
+app.delete("/messages/:id", async (req, res) => {
+  const { user } = req.headers;
+  const { id } = req.params;
+  try {
+    const message = await db
+      .collection("messages")
+      .findOne({ _id: ObjectId(id) });
+
+    if (!message) {
+      return res.sendStatus(404);
+    }
+
+    if (user !== message.from) {
+      return res.sendStatus(401);
+    }
+
+    await db.collection("messages").deleteOne({ _id: ObjectId(id) });
+    res.send(200);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+});
 
 //DELETE INACTIVE USERS
 const updateInterval = 15 * 1000;
