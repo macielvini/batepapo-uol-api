@@ -58,18 +58,16 @@ app.post("/participants", async (req, res) => {
   const validation = validateParticipant(req.body);
   if (validation.error) {
     const errors = validation.error.details.map((e) => e.message);
-    res.status(422).send(errors);
-    return;
-  }
-
-  const nameExist = await db.collection("participants").findOne(body);
-
-  if (nameExist) {
-    res.sendStatus(409);
-    return;
+    return res.status(422).send(errors);
   }
 
   try {
+    const nameExist = await db.collection("participants").findOne(body);
+
+    if (nameExist) {
+      return res.sendStatus(409);
+    }
+
     await db
       .collection("participants")
       .insertOne({ ...body, lastStatus: Date.now() });
