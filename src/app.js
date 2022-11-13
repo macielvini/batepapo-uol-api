@@ -148,10 +148,12 @@ app.post("/status", async (req, res) => {
 //PUT
 
 //DELETE
+
+//DELETE INACTIVE USERS
 const updateInterval = 15 * 1000;
 const deleteInterval = 10 * 1000;
 
-setInterval(async () => {
+async function deleteInactiveUsers() {
   const users = await db.collection("participants").find().toArray();
   const inactiveUsers = users.filter(
     (u) => u.lastStatus < Date.now() - deleteInterval
@@ -170,7 +172,7 @@ setInterval(async () => {
   await inactiveUsers.forEach((u) => {
     db.collection("participants").deleteOne({ _id: u._id });
   });
-}, updateInterval);
-
+}
+setInterval(() => "deleteInactiveUser", updateInterval);
 //port
 app.listen(5000, () => console.log("Server running in port 5000"));
