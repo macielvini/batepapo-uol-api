@@ -231,7 +231,8 @@ async function deleteInactiveUsers() {
     db.collection("participants").deleteOne({ _id: u._id });
   });
 }
-setInterval(() => "deleteInactiveUser", updateInterval);
+//LEMBRAR DE ATIVAR ESSA FUNÇÃO
+setInterval(() => "deleteInactiveUsers()", updateInterval);
 
 //port
 app.listen(5000, () => console.log("Server running in port 5000"));
