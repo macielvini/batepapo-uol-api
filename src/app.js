@@ -32,7 +32,7 @@ app.get("/participants", async (req, res) => {
     const participants = await db.collection("participants").find().toArray();
     res.send(participants);
   } catch (error) {
-    res.sendStatus(400);
+    res.sendStatus(500);
   }
 });
 
@@ -40,14 +40,12 @@ app.get("/messages", async (req, res) => {
   const limit = parseInt(req.query.limit) * -1;
   const { user } = req.headers;
 
-  console.log(user);
-
   try {
     const messages = await db.collection("messages").find().toArray();
     const filteredMessages = messages.filter(
-      (m) => m.type === "message" || m.to === user
+      (m) => m.type === "message" || m.to === user || m.to === "Todos"
     );
-    res.send(filteredMessages);
+    res.send(filteredMessages.slice(limit).reverse());
   } catch (error) {
     res.sendStatus(404);
   }
