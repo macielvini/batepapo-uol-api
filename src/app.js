@@ -212,24 +212,28 @@ const updateInterval = 15 * 1000;
 const deleteInterval = 10 * 1000;
 
 async function deleteInactiveUsers() {
-  const users = await db.collection("participants").find().toArray();
-  const inactiveUsers = users.filter(
-    (u) => u.lastStatus < Date.now() - deleteInterval
-  );
+  try {
+    const users = await db.collection("participants").find().toArray();
+    const inactiveUsers = users.filter(
+      (u) => u.lastStatus < Date.now() - deleteInterval
+    );
 
-  await inactiveUsers.forEach((u) => {
-    db.collection("messages").insertOne({
-      from: u.name,
-      to: "Todos",
-      text: "sai da sala...",
-      type: "status",
-      time: time,
+    await inactiveUsers.forEach((u) => {
+      db.collection("messages").insertOne({
+        from: u.name,
+        to: "Todos",
+        text: "sai da sala...",
+        type: "status",
+        time: time,
+      });
     });
-  });
 
-  await inactiveUsers.forEach((u) => {
-    db.collection("participants").deleteOne({ _id: u._id });
-  });
+    await inactiveUsers.forEach((u) => {
+      db.collection("participants").deleteOne({ _id: u._id });
+    });
+  } catch (error) {
+    console.log(error);
+  }
 }
 //LEMBRAR DE ATIVAR ESSA FUNÇÃO
 setInterval(() => "deleteInactiveUsers()", updateInterval);
